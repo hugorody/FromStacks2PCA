@@ -1,10 +1,11 @@
 #!/usr/bin/python
 #This script is the part 2nd of "From Stacks to PCA" pipeline
 #Input: 3 files and 1 string
-#------ 1. List of selected Stacks IDs (Population file) with 3 tab separated columns
-#------------- 1 column: Individual file name, for example 003
-#------------- 2 column: Individual Stacks ID
-#------------- 3 column: Individual Code, for example MY_CODE003
+#------ 1. List of selected Stacks IDs (Population file) with 4 tab separated columns
+#------------- 1 column: Individual Code, for example MY_CODE003
+#------------- 2 column: Individual lineage, if any it can be set as 1 for all individuals
+#------------- 3 column: Individual file name, for example 003
+#------------- 4 column: Individual Stacks ID
 #------ 2. List of loci shared among individuals, can be obtained from batch_1.catalog.tags.tsv
 #------ 3. Stacks file "batch_1.catalog.tags.tsv"
 #------ 4. nameout. a name for the run, for example analise5
@@ -26,9 +27,9 @@ with open(file1,'r') as set1:
     individuallist = dict()
     for i in set1:
         i = i.split()
-        idstack = i[1]
-        sampledict[int(idstack)] = i[0]
-        samplevsindividualids[int(idstack)] = i[2]
+        idstack = i[3]
+        sampledict[int(idstack)] = i[2]
+        samplevsindividualids[int(idstack)] = i[0]
 set1.close()
 
 with open(file2,'r') as set2:
@@ -79,7 +80,7 @@ set3.close()
 ### CREATE CORRELATION AMONG DICTIONARIES AND GENERATE OUTPUTs
 individualcatalog = {} #Dict {StackID_LociID: sequence}
 for i in individualloci.items(): #{sampleid:[list of loci in the sample that is shared]}
-    f1 = open(file3.replace("batch_1.catalog.tags.tsv","")+"joined_"+sampledict[i[0]]+".tags.tsv","r").readlines()
+    f1 = open(file3.replace("batch_1.catalog.tags.tsv","")+sampledict[i[0]]+".tags.tsv","r").readlines()
     print "Creating catalog for the file "+str(sampledict[i[0]])+" Stacks ID "+str(i[0])+"."
     for j in f1:
         if "consensus" in j:
