@@ -18,9 +18,13 @@
 #------ 1. CSV file named samplelocimatrix.csv
 
 import sys
-file1 = sys.argv[1]
-file2 = sys.argv[2]
-nsamples = sys.argv[3]
+import os
+path1 = sys.argv[1]
+file1 = sys.argv[2]
+file2 = sys.argv[3]
+nsamples = sys.argv[4]
+
+os.chdir( path1 )
 
 #output
 output1 = open("samplelocimatrix.csv",'w')
@@ -48,7 +52,7 @@ with open(file1,'r') as set1:
 
             #feed catalogsele
             if len(stacksidslist) >= int(nsamples): #filtering based on the minimum number of samples sharing the locus
-                print locid,len(stacksidslist)
+                print(locid,len(stacksidslist))
                 catalogsele[locid] = stacksidslist
 
 set1.close() #close file 1
@@ -70,7 +74,7 @@ with open(file2,'r') as set2:
         idstacks = i[3]
         sampledata[idstacks] = i
         listofpresence = list()
-        for j in catalogsele.items(): #verify for each X selected loci if the specific sample (by id stacks) shares the locus
+        for j in list(catalogsele.items()): #verify for each X selected loci if the specific sample (by id stacks) shares the locus
             locus = j[0]
             if locus not in locilist:
                 locilist.append(locus)
@@ -88,7 +92,7 @@ del catalogsele
 
 output1.write("ISOLATE_CODE LINEAGE ISOLATE ID_STACKS SUM_LOCI_LINE "+" ".join(locilist)+"\n");
 
-for i in sampledata.items():
+for i in list(sampledata.items()):
     suma = sum(locipresence[i[0]])
     output1.write(" ".join(i[1])+" "+str(suma)+" "+" ".join(str(x) for x in locipresence[i[0]])+"\n");
 
@@ -96,7 +100,7 @@ locisum = list()
 for i in range(len(locilist)):
     samplelocival = []
 #    print i
-    for j in locipresence.items():
+    for j in list(locipresence.items()):
         samplelocival.append(j[1][i])
     locisum.append(sum(samplelocival))
 output1.write("    SUM_INDIV_COLUMN "+" ".join(str(x) for x in locisum));
