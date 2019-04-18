@@ -14,11 +14,15 @@
 #------ 2. text file containing the order of concatenated loci
 
 import sys
+import os
 
-file1 = sys.argv[1]
-file2 = sys.argv[2]
-file3 = sys.argv[3]
-nameout = sys.argv[4]
+path1 = sys.argv[1]
+file1 = sys.argv[2]
+file2 = sys.argv[3]
+file3 = sys.argv[4]
+nameout = sys.argv[5]
+
+os.chdir( path1 )
 
 ### OPEN FILES TO CREATE DICTIONARIES
 with open(file1,'r') as set1:
@@ -79,9 +83,9 @@ set3.close()
 
 ### CREATE CORRELATION AMONG DICTIONARIES AND GENERATE OUTPUTs
 individualcatalog = {} #Dict {StackID_LociID: sequence}
-for i in individualloci.items(): #{sampleid:[list of loci in the sample that is shared]}
+for i in list(individualloci.items()): #{sampleid:[list of loci in the sample that is shared]}
     f1 = open(file3.replace("batch_1.catalog.tags.tsv","")+sampledict[i[0]]+".tags.tsv","r").readlines()
-    print "Creating catalog for the file "+str(sampledict[i[0]])+" Stacks ID "+str(i[0])+"."
+    print("Creating catalog for the file "+str(sampledict[i[0]])+" Stacks ID "+str(i[0])+".")
     for j in f1:
         if "consensus" in j:
             j = j.rstrip()
@@ -92,9 +96,9 @@ for i in individualloci.items(): #{sampleid:[list of loci in the sample that is 
 #print individualcatalog
 
 output1 = open(nameout+"_concater.fasta","w")
-for i in individualloci.items(): #{sampleid:[list of loci in the sample that is shared]}
+for i in list(individualloci.items()): #{sampleid:[list of loci in the sample that is shared]}
     individualconcatedseq = []
-    for j in catalogids.items(): #{loci_ID:[List_sample_IDs]}
+    for j in list(catalogids.items()): #{loci_ID:[List_sample_IDs]}
         if int(i[0]) in j[1]:
             manytimes = j[1].count(i[0])
             if manytimes == 1: #eliminate duplicated loci
@@ -112,7 +116,7 @@ for i in individualloci.items(): #{sampleid:[list of loci in the sample that is 
     output1.write(">"+samplevsindividualids[i[0]]+" [Stacks ID "+str(i[0])+"]\n"+"MMM".join(individualconcatedseq)+"\n");
 output1.close()
 
-output2 = open(nameout+"_concater_loci_order.fasta","w")
+output2 = open(nameout+"_concater_loci_order.txt","w")
 for i in catalogids:
     output2.write(str(i)+"\n");
 output2.close()
