@@ -1,0 +1,5 @@
+IND1	Lineage1	003_reduced	1
+IND2	Lineage1	019_reduced	2
+IND3	Lineage1	027_reduced	3
+IND4	Lineage1	042_reduced	4
+IND5	Lineage1	059_reduced	5
