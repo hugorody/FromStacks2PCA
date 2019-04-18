@@ -14,13 +14,51 @@
 
 import sys
 import subprocess
-from Bio import SeqIO
+#from Bio import SeqIO
 import os
 
-file1 = sys.argv[1] #concater file
-file2 = sys.argv[2] #reference fasta
-referencename = sys.argv[3]
-nameout = sys.argv[4]
+path1 = sys.argv[1] # data path
+file1 = sys.argv[2] #concater file
+file2 = sys.argv[3] #reference fasta
+referencename = sys.argv[4]
+nameout = sys.argv[5]
+
+os.chdir( path1 )
+path1 = path1 + os.sep
+
+file1 = path1 + file1
+file2 = path1 + file2
+referencename = path1 + referencename
+nameout = path1 + nameout
+
+#function to find reverse complement
+def func_revcomp(my_seq):
+	if any(x for x in my_seq if x.islower()):
+		my_seq = my_seq.upper()
+		case_return = "lower"
+	else:
+		case_return = "upper"
+
+	catalog_revcomp = {"A":"T",
+						"T":"A",
+						"G":"C",
+						"C":"G"
+						}
+	rev = [] #find reverse
+	for i in my_seq:
+		rev.insert(0, i)
+
+	revcomp = []
+	for j in rev:
+		revcomp.append(catalog_revcomp[j])
+
+	revcomp = "".join(revcomp)
+
+	if case_return == "lower":
+		revcomp = revcomp.lower()
+	else:
+		revcomp = revcomp.upper()
+	return revcomp
 
 #creates seqs dictionary with sequences for each loci
 with open(file1,"r") as set1:
@@ -36,8 +74,8 @@ with open(file1,"r") as set1:
                     if "?" not in i and str(count) not in seqs:
                         seqs[str(count)] = i
 #fasta file with loci sequence that will be used as query during BLAST searches against reference genome
-fastaoutput = open("concater_sample.fasta","w")
-for i in seqs.items():
+fastaoutput = open( path1 + "concater_sample.fasta","w")
+for i in list(seqs.items()):
     fastaoutput.write(">"+i[0]+"\n"+i[1]+"\n");
 fastaoutput.close()
 
@@ -45,7 +83,7 @@ fastaoutput.close()
 makeblastdb = subprocess.Popen("makeblastdb -in " + file2 + " -dbtype nucl -out " + referencename + ".blastdb", shell=True)
 makeblastdb.wait()
 
-blastn = subprocess.Popen("blastn -query concater_sample.fasta -db " + referencename + ".blastdb -evalue 1e-20 -outfmt 6 -out " + referencename + ".blastn", shell=True)
+blastn = subprocess.Popen("blastn -query " + path1 + "concater_sample.fasta -db " + referencename + ".blastdb -evalue 1e-20 -outfmt 6 -out " + referencename + ".blastn", shell=True)
 blastn.wait()
 
 #read blast output
@@ -84,11 +122,20 @@ outputpa.close()
 
 #catalog with genome ref sequences
 referenceseqs = {}
-for record in SeqIO.parse(file2, "fasta"):
-    referenceseqs[record.id] = record.seq
+#for record in SeqIO.parse(file2, "fasta"):
+#    referenceseqs[record.id] = record.seq
+with open(file2,"r") as set_fasta:
+    for line in set_fasta:
+        line = line.rstrip()
+        if line[0] == '>':
+            words=line.split()
+            name=words[0][1:]
+            referenceseqs[name]=''
+        else:
+            referenceseqs[name] = referenceseqs[name] + line
 
 finalrefseqs = {}
-for i in ref_coordinates.items():
+for i in list(ref_coordinates.items()):
     locus = i[0]
     refheader = i[1][0]
     startref = int(i[1][1])
@@ -109,20 +156,20 @@ for i in ref_coordinates.items():
                 finalrefseqs[locus] = variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop+addtoend
         else:
             if len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) == 80:
-                finalrefseqs[locus] = variableinstart+referenceseqs[refheader][stopref+1:startref].reverse_complement()+variableinstop
+                finalrefseqs[locus] = variableinstart+func_revcomp(referenceseqs[refheader][stopref+1:startref])+variableinstop
             elif len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) < 80:
                 addtoend = int(80 - len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop)) * "?"
-                finalrefseqs[locus] = variableinstart+referenceseqs[refheader][stopref+1:startref].reverse_complement()+variableinstop+addtoend
+                finalrefseqs[locus] = variableinstart+func_revcomp(referenceseqs[refheader][stopref+1:startref])+variableinstop+addtoend
 
 #write to concatenated file given as input the reference sequences of loci concatenated
 concatenatedfile = open(file1,"a")
-concatenatedfile.write(">"+referencename+"\n");
+concatenatedfile.write(">"+referencename.replace(path1,"")+"\n");
 presence_absense_inref = {} #dict with key locus number and presence absence information as values
 for i in range(1,len(seqs)+1):
     if str(i) in finalrefseqs:
         presence_absense_inref[i] = "presence"
         if len(finalrefseqs[str(i)]) < 80:
-            print (i,len(finalrefseqs[str(i)]))
+            print((i,len(finalrefseqs[str(i)])))
         concatenatedfile.write("MMM"+str(finalrefseqs[str(i)]));
     else:
         concatenatedfile.write("MMM" + 80 * "?");
@@ -146,9 +193,9 @@ with open(file1,"r") as set1:
                 seqsconcat[name] = line
 
 outputfinal = open(nameout+"_concater_plus_ref.fasta","w")
-for i in seqsconcat.items():
+for i in list(seqsconcat.items()):
     outputfinal.write(">"+i[0]+"\n");
-    for j in presence_absense_inref.items():
+    for j in list(presence_absense_inref.items()):
         if j[1] == "presence":
             position = int(j[0]) - 1
             outputfinal.write("MMM"+str(i[1][position]));
@@ -156,7 +203,11 @@ for i in seqsconcat.items():
 outputfinal.close()
 
 #remove temporary files
-os.remove(referencename+".blastdb.nhr")
-os.remove(referencename+".blastdb.nin")
-os.remove(referencename+".blastdb.nsq")
-os.remove("concater_sample.fasta")
+if os.path.exists(referencename+".blastdb.nhr"):
+    os.remove(referencename+".blastdb.nhr")
+if os.path.exists(referencename+".blastdb.nin"):
+    os.remove(referencename+".blastdb.nin")
+if os.path.exists(referencename+".blastdb.nsq"):
+    os.remove(referencename+".blastdb.nsq")
+if os.path.exists( path1 + "concater_sample.fasta"):
+    os.remove( path1 + "concater_sample.fasta")
