@@ -20,14 +20,15 @@ import os
 path1 = sys.argv[1] # data path
 file1 = sys.argv[2] #concater file
 file2 = sys.argv[3] #reference fasta
+blastdir = "".join(sys.argv[3].split("/")[0:-2])
 referencename = sys.argv[4]
 nameout = sys.argv[5]
 
 os.chdir( path1 )
 path1 = path1 + os.sep
 
-file1 = path1 + file1
-file2 = path1 + file2
+#file1 = path1 + file1
+#file2 = path1 + file2
 referencename = path1 + referencename
 nameout = path1 + nameout
 
