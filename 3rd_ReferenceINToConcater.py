@@ -28,7 +28,7 @@ path1 = path1 + os.sep
 
 #file1 = path1 + file1
 #file2 = path1 + file2
-referencename = path1 + referencename
+#referencename = path1 + referencename
 nameout = path1 + nameout
 
 #function to find reverse complement
@@ -82,6 +82,8 @@ fastaoutput.close()
 #BLAST steps
 makeblastdb = subprocess.Popen("makeblastdb -in " + file2 + " -dbtype nucl -out " + referencename + ".blastdb", shell=True)
 makeblastdb.wait()
+
+print ("Running BLASTn step...")
 
 blastn = subprocess.Popen("blastn -query " + path1 + "concater_sample.fasta -db " + referencename + ".blastdb -evalue 1e-20 -outfmt 6 -out " + referencename + ".blastn", shell=True)
 blastn.wait()
@@ -184,7 +186,6 @@ with open(file1,"r") as set1:
         if line != "\n":
             line = line.rstrip()
             if line[0] == '>':
-
                 name=line[1:]
                 seqsconcat[name] = []
             else:
@@ -211,3 +212,5 @@ if os.path.exists(referencename+".blastdb.nsq"):
     os.remove(referencename+".blastdb.nsq")
 if os.path.exists( path1 + "concater_sample.fasta"):
     os.remove( path1 + "concater_sample.fasta")
+
+print ("Phase 3 completed.")
