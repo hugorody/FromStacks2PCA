@@ -127,14 +127,19 @@ referenceseqs = {}
 #for record in SeqIO.parse(file2, "fasta"):
 #    referenceseqs[record.id] = record.seq
 with open(file2,"r") as set_fasta:
+    s = ''
     for line in set_fasta:
         line = line.rstrip()
         if line[0] == '>':
+            if s != '':
+               referenceseqs[name] = s 
             words=line.split()
             name=words[0][1:]
-            referenceseqs[name]=''
+            s = ''
         else:
-            referenceseqs[name] = referenceseqs[name] + line
+            s = s + line
+    if s != '':
+        referenceseqs[name] = s
 
 finalrefseqs = {}
 for i in list(ref_coordinates.items()):
