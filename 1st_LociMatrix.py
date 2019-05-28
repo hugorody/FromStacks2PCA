@@ -36,8 +36,8 @@ with open(file1,'r') as set1:
     for i in set1:
         if "#" not in i:
             i = i.split("\t")
-            locid = i[2]
-            stackids = i[8].split(",")
+            locid = i[1]
+            stackids = i[4].split(",")
             stacksidslist = [] #list of samples IDs in the locus
 
             for j in stackids:
