@@ -23,6 +23,8 @@ file2 = sys.argv[3] #reference fasta
 referencename = sys.argv[4]
 nameout = sys.argv[5]
 
+readlen = 80
+
 os.chdir( path1 )
 path1 = path1 + os.sep
 
@@ -132,7 +134,7 @@ with open(file2,"r") as set_fasta:
         line = line.rstrip()
         if line[0] == '>':
             if s != '':
-               referenceseqs[name] = s 
+               referenceseqs[name] = s
             words=line.split()
             name=words[0][1:]
             s = ''
@@ -151,21 +153,21 @@ for i in list(ref_coordinates.items()):
     startloc = int(loc_coordinates[locus][0])
     stoploc = int(loc_coordinates[locus][1])
     variableinstart = (startloc - 1) * "?"
-    variableinstop = (80 - stoploc) * "?"
+    variableinstop = (readlen - stoploc) * "?"
     #print (startloc,stoploc)
 
     if refheader in referenceseqs:
         if startref < stopref:
-            if len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop) == 80:
+            if len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop) == readlen:
                 finalrefseqs[locus] = variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop
-            elif len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop) < 80:
-                addtoend = int(80 - len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop)) * "?"
+            elif len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop) < readlen:
+                addtoend = int(readlen - len(variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop)) * "?"
                 finalrefseqs[locus] = variableinstart+referenceseqs[refheader][startref-1:stopref]+variableinstop+addtoend
         else:
-            if len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) == 80:
+            if len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) == readlen:
                 finalrefseqs[locus] = variableinstart+func_revcomp(referenceseqs[refheader][stopref+1:startref])+variableinstop
-            elif len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) < 80:
-                addtoend = int(80 - len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop)) * "?"
+            elif len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop) < readlen:
+                addtoend = int(readlen - len(variableinstart+referenceseqs[refheader][stopref+1:startref]+variableinstop)) * "?"
                 finalrefseqs[locus] = variableinstart+func_revcomp(referenceseqs[refheader][stopref+1:startref])+variableinstop+addtoend
 
 #write to concatenated file given as input the reference sequences of loci concatenated
@@ -175,11 +177,11 @@ presence_absense_inref = {} #dict with key locus number and presence absence inf
 for i in range(1,len(seqs)+1):
     if str(i) in finalrefseqs:
         presence_absense_inref[i] = "presence"
-        if len(finalrefseqs[str(i)]) < 80:
+        if len(finalrefseqs[str(i)]) < readlen:
             print((i,len(finalrefseqs[str(i)])))
         concatenatedfile.write("MMM"+str(finalrefseqs[str(i)]));
     else:
-        concatenatedfile.write("MMM" + 80 * "?");
+        concatenatedfile.write("MMM" + readlen * "?");
         presence_absense_inref[i] = "absence"
 concatenatedfile.write("\n");
 concatenatedfile.close()
@@ -218,4 +220,4 @@ if os.path.exists(referencename+".blastdb.nsq"):
 if os.path.exists( path1 + "concater_sample.fasta"):
     os.remove( path1 + "concater_sample.fasta")
 
-print ("Phase 3 completed.")
+print ("Step 3 completed.")
