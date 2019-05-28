@@ -52,11 +52,11 @@ with open(file3,'r') as set3:
     for i in set3:
         if "#" not in i:
             i = i.split("\t")
-            locid = int(i[2]) #catalog shared loci ID
+            locid = int(i[1]) #catalog shared loci ID
 
             if locid in locidict: #only if loci is in selected loci input
             #    consensuseq[locid] = i[9] #feeds dictionary with fasta consensus sequence of shared loci
-                stackids = i[8].split(",") #takes the column in batch file where sampleID_locusID are separated by comma and split into list
+                stackids = i[4].split(",") #takes the column in batch file where sampleID_locusID are separated by comma and split into list
                 idssamplelist = [] #list of samples_IDs in the shared loci
                 idslocilist = []   #list of locis_IDs in the shared loci
 
@@ -84,15 +84,18 @@ set3.close()
 ### CREATE CORRELATION AMONG DICTIONARIES AND GENERATE OUTPUTs
 individualcatalog = {} #Dict {StackID_LociID: sequence}
 for i in list(individualloci.items()): #{sampleid:[list of loci in the sample that is shared]}
-    f1 = open(file3.replace("batch_1.catalog.tags.tsv","")+sampledict[i[0]]+".tags.tsv","r").readlines()
+    f1 = open(file3.replace("catalog.tags.tsv","")+sampledict[i[0]]+".tags.tsv","r").readlines()
     print("Creating catalog for the file "+str(sampledict[i[0]])+" Stacks ID "+str(i[0])+".")
     for j in f1:
         if "consensus" in j:
             j = j.rstrip()
             j = j.split("\t")
-            if int(j[2]) in i[1]:
-                individualcatalog[str(i[0])+"_"+j[2]] = j[9]
-            #    print str(i[0])+"_"+j[2],j[9]
+            if int(j[1]) in i[1]:
+                indiv = str(i[0])
+                locus = j[1]
+                seque = j[5]
+                individualcatalog[indiv+"_"+locus] = seque
+
 #print individualcatalog
 
 output1 = open(nameout+"_concater.fasta","w")
