@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+#This script is part of FSTP pipeline
+#Using the population map file used as input for Stacks pipelines
+#to create the "population file" contaning both personal and Stacks
+#annotation to run the FSTP pipeline.
+
 import sys
 
 population_map = sys.argv[1] #population map file used for Stacks pipelines
